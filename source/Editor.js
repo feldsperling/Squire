@@ -1873,6 +1873,10 @@ proto.insertHTML = function ( html, isPaste ) {
         if ( /<\/tr>((?!<\/table>)[\s\S])*$/i.test( html ) ) {
             html = '<TABLE>' + html + '</TABLE>';
         }
+        // IE will sometimes copy <li>s without surrounding <ul>
+        if( /^<li>/i.test(html) ) {
+            html = '<UL>' + html + '</UL>';
+        }
         // Parse HTML into DOM tree
         div = this.createElement( 'DIV' );
         div.innerHTML = html;
