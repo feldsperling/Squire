@@ -434,11 +434,13 @@ proto.moveCursorToEnd = function () {
 };
 
 var getWindowSelection = function ( self ) {
-    if ( self._topParent.nodeType === DOCUMENT_FRAGMENT_NODE ) {
-        return self._topParent.getSelection() || null;
-    } else {
-        return self._win.getSelection() || null;
+    var pivotDocument = self._doc;
+    while (pivotDocument.activeElement && pivotDocument.activeElement.shadowRoot) {
+        pivotDocument = pivotDocument.activeElement.shadowRoot;
     }
+    var realSel = pivotDocument.getSelection();
+
+    return realSel || null;
 };
 
 proto.setSelection = function ( range ) {
@@ -482,7 +484,7 @@ proto.getSelection = function () {
     var selection, startContainer, endContainer, node;
     // If not focused, always rely on cached selection; another function may
     // have set it but the DOM is not modified until focus again
-    if ( this._isFocused && sel && sel.rangeCount ) {
+    if ( this._isFocused && sel && sel.rangeCount && sel.getRangeAt( 0 ) ) {
         selection  = sel.getRangeAt( 0 ).cloneRange();
         startContainer = selection.startContainer;
         endContainer = selection.endContainer;
