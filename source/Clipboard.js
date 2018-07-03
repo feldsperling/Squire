@@ -142,6 +142,7 @@ var onPaste = function ( event ) {
     var fireDrop = false;
     var hasImage = false;
     var plainItem = null;
+    var isImagePasteInChromeOrFF = false;
     var self = this;
     var l, item, type, types, data;
 
@@ -166,6 +167,22 @@ var onPaste = function ( event ) {
     if ( items ) {
         event.preventDefault();
         l = items.length;
+
+        isImagePasteInChromeOrFF =  (l===2
+                                  && items[0].type === 'text/html'
+                                  && /^image\/.*/.test( items[1].type ) );
+        if (isImagePasteInChromeOrFF) {
+            var file = items[1].getAsFile();
+            var reader = new FileReader();
+
+            reader.readAsDataURL(file);
+            var result = reader.result;
+            var img = document.createElement('img');
+            img.src = result;
+            self.insertHTML(img.outerHTML, true);
+            return;
+        }
+
         while ( l-- ) {
             item = items[l];
             type = item.type;
