@@ -142,9 +142,9 @@ var onPaste = function ( event ) {
     var fireDrop = false;
     var hasImage = false;
     var plainItem = null;
-    var isImagePasteInChromeOrFF = false;
     var self = this;
-    var l, item, type, types, data;
+    var imageWasInserted=false;
+    var l, m, item, type, types, data;
 
     // Current HTML5 Clipboard interface
     // ---------------------------------
@@ -166,22 +166,30 @@ var onPaste = function ( event ) {
     }
     if ( items ) {
         event.preventDefault();
-        l = items.length;
 
-        isImagePasteInChromeOrFF =  (l===2
-                                  && items[0].type === 'text/html'
-                                  && /^image\/.*/.test( items[1].type ) );
-        if (isImagePasteInChromeOrFF) {
-            var file = items[1].getAsFile();
-            var reader = new FileReader();
-
-            reader.readAsDataURL(file);
-            var result = reader.result;
-            var img = document.createElement('img');
-            img.src = result;
-            self.insertHTML(img.outerHTML, true);
+        //We want to elevate image handling, so this is handled first
+        m = items.length;
+        while ( m-- ){
+            //Detecting any images in items
+            if (/^image\/.*/.test(items[m].type)){
+                var file = items[m].getAsFile();
+                var reader = new FileReader();
+                //FileReader loads the image asynchronously. Callback after load:
+                reader.onload = function(e) {
+                  var img = document.createElement('img');
+                  img.src = e.target.result;
+                  self.insertHTML(img.outerHTML, true);
+                };
+                reader.readAsDataURL(file);
+                imageWasInserted=true;
+            }
+        }
+        //If we inserted any image we want to skip any further handling of pasting
+        if (imageWasInserted){
             return;
         }
+
+        l = items.length;
 
         while ( l-- ) {
             item = items[l];
