@@ -383,7 +383,7 @@ proto.removeEventListener = function ( type, fn ) {
 
 // --- Selection and Path ---
 
-proto._createRange =
+proto.createRange =
         function ( range, startOffset, endContainer, endOffset ) {
     if ( range instanceof this._win.Range ) {
         return range.cloneRange();
@@ -421,7 +421,7 @@ proto.getCursorPosition = function ( range ) {
 
 proto._moveCursorTo = function ( toStart ) {
     var root = this._root,
-        range = this._createRange( root, toStart ? 0 : root.childNodes.length );
+        range = this.createRange( root, toStart ? 0 : root.childNodes.length );
     moveRangeBoundariesDownTree( range );
     this.setSelection( range );
     return this;
@@ -509,7 +509,7 @@ proto.getSelection = function () {
         }
     }
     if ( !selection ) {
-        selection = this._createRange( root.firstChild, 0 );
+        selection = this.createRange( root.firstChild, 0 );
     }
     return selection;
 };
@@ -1115,7 +1115,7 @@ proto._addFormat = function ( tag, attributes, range ) {
         }
 
         // Now set the selection to as it was before
-        range = this._createRange(
+        range = this.createRange(
             startContainer, startOffset, endContainer, endOffset );
     }
     return range;
@@ -1740,7 +1740,7 @@ proto.setHTML = function ( html ) {
 
     // Record undo state
     var range = this._getRangeAndRemoveBookmark() ||
-        this._createRange( root.firstChild, 0 );
+        this.createRange( root.firstChild, 0 );
     this.saveUndoState( range );
     // IE will also set focus when selecting text so don't use
     // setSelection. Instead, just store it in lastSelection, so if
@@ -1806,7 +1806,7 @@ proto.insertImage = function ( src, attributes ) {
     return img;
 };
 
-var linkRegExp = /\b((?:(?:ht|f)tps?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,}\/)(?:[^\s()<>]+|\([^\s()<>]+\))+(?:\((?:[^\s()<>]+|(?:\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))|([\w\-.%+]+@(?:[\w\-]+\.)+[A-Z]{2,}\b)/i;
+var linkRegExp = /\b((?:(?:ht|f)tps?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,}\/)(?:[^\s()<>]+|\([^\s()<>]+\))+(?:\((?:[^\s()<>]+|(?:\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))|([\w\-.%+]+@(?:[\w\-]+\.)+[A-Z]{2,}\b)(?:\?[^&?\s]+=[^&?\s]+(?:&[^&?\s]+=[^&?\s]+)*)?/i;
 
 var addLinks = function ( frag, root, self ) {
     var doc = frag.ownerDocument,
@@ -1828,10 +1828,10 @@ var addLinks = function ( frag, root, self ) {
             }
             child = self.createElement( 'A', mergeObjects({
                 href: match[1] ?
-                    /^(?:ht|f)tps?:/.test( match[1] ) ?
+                    /^(?:ht|f)tps?:/i.test( match[1] ) ?
                         match[1] :
                         'http://' + match[1] :
-                    'mailto:' + match[2]
+                    'mailto:' + match[0]
             }, defaultAttributes, false ));
             child.textContent = data.slice( index, endIndex );
             parent.insertBefore( child, node );
