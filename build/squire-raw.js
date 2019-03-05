@@ -1920,8 +1920,8 @@ var stylesRewriters = {
             }
             newTreeBottom = sizeSpan;
         }
-        if ( colour && /^#?([\dA-F]{3}){1,2}$/i.test( colour ) ) {
-            if ( colour.charAt( 0 ) !== '#' ) {
+        if ( colour ) {
+            if ( /^#?([\dA-F]{3}){1,2}$/i.test( colour ) && colour.charAt( 0 ) !== '#' ) {
                 colour = '#' + colour;
             }
             colourSpan = createElement( doc, 'SPAN', {
