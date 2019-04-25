@@ -46,6 +46,7 @@ function Squire ( root, config ) {
     // cache it just before it loses focus.
     if ( losesSelectionOnBlur ) {
         this.addEventListener( 'beforedeactivate', this.getSelection );
+        this.addEventListener( 'focus' , this.setScrollPositionFromSelection);
     }
 
     this._hasZWS = false;
@@ -443,6 +444,75 @@ var getWindowSelection = function ( self ) {
     return realSel || null;
 };
 
+proto.ensureGcsoSquire = function(){
+    if (!this._gcsoSquire) {
+        var node=this.getRoot().parentNode;
+        if (node){
+            if (node.nodeName==='#document-fragment'){
+                node=node.host;
+            }
+            if (node.nodeName==='GCSO-FRM-SQUIRE'){
+                this._gcsoSquire=node;
+            }
+        }
+    }
+}
+
+
+proto.getScrollPosition = function(){
+    this.ensureGcsoSquire();
+
+    var scrollPos = {left: 0, top: 0};
+
+    if (this._gcsoSquire){
+        scrollPos = {left: this._gcsoSquire.scrollLeft, top: this._gcsoSquire.scrollTop};
+    }
+
+    return scrollPos;
+}
+
+proto.ensureGcsoSquire = function(){
+    if (!this._gcsoSquire) {
+        var node=this._root.parentNode;
+        if (node){
+            if (node.nodeName==='#document-fragment'){
+                node=node.host;
+            }
+            if (node.nodeName==='GCSO-FRM-SQUIRE'){
+                this._gcsoSquire=node;
+            }
+        }
+    }
+}
+
+proto.setScrollPositionFromSelection = function (){
+    if (!this._lastSelection || !this._lastSelection._gc_squire_scroll){
+        return;
+    }
+
+
+    var scrollPos = this._lastSelection._gc_squire_scroll
+    this.setScrollPosition(scrollPos);
+
+}
+
+proto.setScrollPosition = function ( scrollPos ){
+    if (!scrollPos){
+        return;
+    }
+    //gcso-squire erst suchen, wenn wir auch Scrollpositionen zum wiederherstellen haben.
+    this.ensureGcsoSquire();
+    if (!this._gcsoSquire){
+        return;
+    }
+    if (scrollPos.top===1){
+        debugger;
+    }
+
+    this._gcsoSquire.scrollTop = scrollPos.top;
+    this._gcsoSquire.scrollLeft = scrollPos.left;
+}
+
 proto.setSelection = function ( range ) {
     if ( range ) {
         this._lastSelection = range;
@@ -486,6 +556,9 @@ proto.getSelection = function () {
     // have set it but the DOM is not modified until focus again
     if ( this._isFocused && sel && sel.rangeCount && sel.getRangeAt( 0 ) ) {
         selection  = sel.getRangeAt( 0 ).cloneRange();
+        if (losesSelectionOnBlur) {
+            selection._gc_squire_scroll = this.getScrollPosition();
+        }
         startContainer = selection.startContainer;
         endContainer = selection.endContainer;
         // FF can return the selection as being inside an <img>. WTF?
