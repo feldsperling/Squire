@@ -41,6 +41,9 @@ var ctrlKey = isMac ? 'meta-' : 'ctrl-';
 var useTextFixer = isIElt11 || isPresto;
 var cantFocusEmptyTextNodes = isIElt11 || isWebKit;
 var losesSelectionOnBlur = isIElt11;
+if (window.Gcso && window.Gcso.Util && window.Gcso.Util.browserIsIE){
+    losesSelectionOnBlur = losesSelectionOnBlur || window.Gcso.Util.browserIsIE();
+}
 
 var canObserveMutations = typeof MutationObserver !== 'undefined';
 var canWeakMap = typeof WeakMap !== 'undefined';
