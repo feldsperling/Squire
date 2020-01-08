@@ -435,13 +435,11 @@ proto.moveCursorToEnd = function () {
 };
 
 var getWindowSelection = function ( self ) {
-    var pivotDocument = self._doc;
-    while (pivotDocument.activeElement && pivotDocument.activeElement.shadowRoot) {
-        pivotDocument = pivotDocument.activeElement.shadowRoot;
+    if ( self._topParent.nodeType === DOCUMENT_FRAGMENT_NODE ) {
+        return self._topParent.getSelection() || null;
+    } else {
+        return self._win.getSelection() || null;
     }
-    var realSel = pivotDocument.getSelection();
-
-    return realSel || null;
 };
 
 proto.ensureGcsoSquire = function(){
@@ -554,7 +552,7 @@ proto.getSelection = function () {
     var selection, startContainer, endContainer, node;
     // If not focused, always rely on cached selection; another function may
     // have set it but the DOM is not modified until focus again
-    if ( this._isFocused && sel && sel.rangeCount && sel.getRangeAt( 0 ) ) {
+    if ( this._isFocused && sel && sel.rangeCount ) {
         selection  = sel.getRangeAt( 0 ).cloneRange();
         if (losesSelectionOnBlur) {
             selection._gc_squire_scroll = this.getScrollPosition();
