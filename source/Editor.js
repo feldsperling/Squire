@@ -22,7 +22,6 @@ function Squire ( root, config ) {
     if ( root.nodeType === DOCUMENT_NODE ) {
         root = root.body;
     }
-
     var doc = root.ownerDocument;
     var win = doc.defaultView;
     var mutation;
@@ -30,12 +29,6 @@ function Squire ( root, config ) {
     this._win = win;
     this._doc = doc;
     this._root = root;
-
-    var topParent = root;
-    while (topParent.parentNode) {
-        topParent = topParent.parentNode; 
-    }
-    this._topParent = topParent;
 
     this._events = {};
 
@@ -264,12 +257,7 @@ proto.fireEvent = function ( type, event ) {
     // focus event to fire after the blur event, which can cause an infinite
     // loop. So we detect whether we're actually focused/blurred before firing.
     if ( /^(?:focus|blur)/.test( type ) ) {
-        // isFocused = this._root === this._doc.activeElement;
-        if ( this._topParent.nodeType === DOCUMENT_FRAGMENT_NODE ) {
-            isFocused = isOrContains( this._root, this._topParent.activeElement );
-        } else {
-            isFocused = isOrContains( this._root, this._doc.activeElement );
-        }
+        isFocused = this._root === this._doc.activeElement;
         if ( type === 'focus' ) {
             if ( !isFocused || this._isFocused ) {
                 return this;
@@ -435,13 +423,7 @@ proto.moveCursorToEnd = function () {
 };
 
 var getWindowSelection = function ( self ) {
-    var pivotDocument = self._doc;
-    while (pivotDocument.activeElement && pivotDocument.activeElement.shadowRoot) {
-        pivotDocument = pivotDocument.activeElement.shadowRoot;
-    }
-    var realSel = pivotDocument.getSelection();
-
-    return realSel || null;
+    return self._win.getSelection() || null;
 };
 
 proto.ensureGcsoSquire = function(){
@@ -554,7 +536,7 @@ proto.getSelection = function () {
     var selection, startContainer, endContainer, node;
     // If not focused, always rely on cached selection; another function may
     // have set it but the DOM is not modified until focus again
-    if ( this._isFocused && sel && sel.rangeCount && sel.getRangeAt( 0 ) ) {
+    if ( this._isFocused && sel && sel.rangeCount ) {
         selection  = sel.getRangeAt( 0 ).cloneRange();
         if (losesSelectionOnBlur) {
             selection._gc_squire_scroll = this.getScrollPosition();
