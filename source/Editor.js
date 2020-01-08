@@ -22,7 +22,6 @@ function Squire ( root, config ) {
     if ( root.nodeType === DOCUMENT_NODE ) {
         root = root.body;
     }
-
     var doc = root.ownerDocument;
     var win = doc.defaultView;
     var mutation;
@@ -30,12 +29,6 @@ function Squire ( root, config ) {
     this._win = win;
     this._doc = doc;
     this._root = root;
-
-    var topParent = root;
-    while (topParent.parentNode) {
-        topParent = topParent.parentNode; 
-    }
-    this._topParent = topParent;
 
     this._events = {};
 
@@ -264,12 +257,7 @@ proto.fireEvent = function ( type, event ) {
     // focus event to fire after the blur event, which can cause an infinite
     // loop. So we detect whether we're actually focused/blurred before firing.
     if ( /^(?:focus|blur)/.test( type ) ) {
-        // isFocused = this._root === this._doc.activeElement;
-        if ( this._topParent.nodeType === DOCUMENT_FRAGMENT_NODE ) {
-            isFocused = isOrContains( this._root, this._topParent.activeElement );
-        } else {
-            isFocused = isOrContains( this._root, this._doc.activeElement );
-        }
+        isFocused = this._root === this._doc.activeElement;
         if ( type === 'focus' ) {
             if ( !isFocused || this._isFocused ) {
                 return this;
@@ -435,11 +423,7 @@ proto.moveCursorToEnd = function () {
 };
 
 var getWindowSelection = function ( self ) {
-    if ( self._topParent.nodeType === DOCUMENT_FRAGMENT_NODE ) {
-        return self._topParent.getSelection() || null;
-    } else {
-        return self._win.getSelection() || null;
-    }
+    return self._win.getSelection() || null;
 };
 
 proto.ensureGcsoSquire = function(){
