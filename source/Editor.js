@@ -439,7 +439,13 @@ var getWindowSelection = function ( self ) {
     while (pivotDocument.activeElement && pivotDocument.activeElement.shadowRoot) {
         pivotDocument = pivotDocument.activeElement.shadowRoot;
     }
-    var realSel = pivotDocument.getSelection();
+	var realSel;
+	// FF does no longer support getSelection on ShadowRoot (tested with v72)
+	if(pivotDocument.getSelection) {
+		realSel = pivotDocument.getSelection();
+	} else {
+		realSel = self._win.getSelection();
+	}
 
     return realSel || null;
 };
